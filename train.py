@@ -5,11 +5,11 @@ from typing import Tuple, List
 import torch
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
-from torch.optim import SGD, lr_scheduler
+from torch.optim import SGD
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from logger import get_logger
+from utils.logger import get_logger
 from model import CustomMaskRCNN
 
 DEVICE = torch.device('cpu') # torch.device("mps" if torch.backends.mps.is_available() else "cpu")

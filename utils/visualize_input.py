@@ -3,8 +3,8 @@ from dataset import ForksSpoonsKnifesDataset
 import matplotlib.pyplot as plt
 import numpy as np
 
-IMAGES_DIR = 'data/images'
-ANNOTATIONS_PATH = 'data/annotations/instances_default.json'
+IMAGES_DIR = '../data/images'
+ANNOTATIONS_PATH = '../data/annotations/instances_default.json'
 CLASS_COLORS = {
     1: (255, 0, 0),    # Red for fork
     2: (0, 255, 0),    # Green for spoon

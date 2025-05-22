@@ -4,10 +4,10 @@ import torch
 from pycocotools.coco import COCO
 
 from dataset import get_loader
-from logger import get_logger
+from utils.logger import get_logger
 from model import CustomMaskRCNN
 from train import train_model
-from utils import plot_training_curves, inference_and_visualization,get_config
+from utils.utils import plot_training_curves, inference_and_visualization,get_config
 
 IMAGES_DIR = 'data/images'
 ANNOTATIONS_PATH = 'data/annotations/instances_default.json'

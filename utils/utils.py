@@ -46,7 +46,7 @@ def plot_training_curves(loss_history: List, mAP_history: List) -> None:
     fig.update_yaxes(title_text='Loss', secondary_y=False)
     fig.update_yaxes(title_text='mAP', secondary_y=True)
 
-    output_path = 'tmp/training_metrics.html'
+    output_path = '../tmp/training_metrics.html'
     fig.write_html(output_path)
 
 

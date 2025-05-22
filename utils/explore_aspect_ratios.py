@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pycocotools.coco import COCO
 
-ANNOTATIONS_PATH = 'data/annotations/instances_default.json'
+ANNOTATIONS_PATH = '../data/annotations/instances_default.json'
 
 
 def run() -> None:
