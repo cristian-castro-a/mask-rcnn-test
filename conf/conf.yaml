@@ -1,2 +1,4 @@
 defaults:
   - data_config
+  - train_config
+  - model_config

@@ -1,2 +1,13 @@
 images_dir: 'data/images'
+
 annotations_path: 'data/annotations/instances_default.json'
+
+class_names:
+  '1': 'fork'
+  '2': 'spoon'
+  '3': 'knife'
+
+class_colors:
+  '1': [255, 0, 0]
+  '2': [0, 255, 0]
+  '3': [0, 0, 255]

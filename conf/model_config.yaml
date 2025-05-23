@@ -1,0 +1,14 @@
+trainable_layers: 3
+
+anchor_sizes:
+  - 16
+  - 32
+  - 64
+  - 128
+  - 256
+
+anchor_aspect_ratios:
+  - 0.12
+  - 0.5
+  - 2.0
+  - 8.0

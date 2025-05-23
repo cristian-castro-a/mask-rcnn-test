@@ -1,0 +1,5 @@
+epochs: 15
+
+detection_threshold: 0.5
+
+score_threshold: 0.25
