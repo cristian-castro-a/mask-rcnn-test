@@ -4,6 +4,7 @@ from pathlib import Path
 import torch
 from pycocotools.coco import COCO
 import hydra
+from omegaconf import OmegaConf
 from dataset import get_loader
 from model import CustomMaskRCNN
 from train import train_model
@@ -15,8 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 @hydra.main(config_path='conf', config_name='conf.yaml', version_base=None)
-def run(cfg) -> None:
-    print('test')
+def run(cfg: OmegaConf) -> None:
     # coco = COCO(annotation_file=annotations_path)
     # all_image_ids = list(coco.imgs.keys())
     #
