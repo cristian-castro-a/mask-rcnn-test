@@ -1,0 +1,2 @@
+images_dir: 'data/images'
+annotations_path: 'data/annotations/instances_default.json'

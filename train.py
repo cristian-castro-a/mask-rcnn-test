@@ -1,4 +1,5 @@
 import json
+import logging
 from pathlib import Path
 from typing import Tuple, List
 
@@ -9,14 +10,13 @@ from torch.optim import SGD
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from utils.logger import get_logger
 from model import CustomMaskRCNN
 
 DEVICE = torch.device('cpu') # torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 EPOCHS = 15
 TMP = Path('tmp')
 
-logger = get_logger()
+logger = logging.getLogger(__name__)
 
 def evaluate(model: CustomMaskRCNN, val_loader: DataLoader, coco_gt: COCO, epoch: int) -> float:
     TMP.mkdir(parents=True, exist_ok=True)
