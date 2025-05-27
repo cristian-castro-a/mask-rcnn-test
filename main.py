@@ -1,14 +1,16 @@
 import logging
 from pathlib import Path
 
-import torch
-from pycocotools.coco import COCO
 import hydra
+import mlflow
+import torch
 from omegaconf import OmegaConf
+from pycocotools.coco import COCO
+
 from dataset import get_loader
 from model import CustomMaskRCNN
 from train import train_model
-from utils.utils import plot_training_curves, inference_and_visualization,get_config
+from utils.utils import plot_training_curves, inference_and_visualization
 
 DEVICE = torch.device('cpu') # torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
@@ -24,11 +26,11 @@ def run(config: OmegaConf) -> None:
     train_ids = all_image_ids[:76]
     val_ids = all_image_ids[76:]
 
-    train_loader = get_loader(images_dir=Path(config.images_dir),
-                              annotations_path=config.annotations_path,
+    train_loader = get_loader(images_dir=Path(config.data_config.images_dir),
+                              annotations_path=config.data_config.annotations_path,
                               ids=train_ids)
-    val_loader = get_loader(images_dir=Path(config.images_dir),
-                            annotations_path=config.annotations_path,
+    val_loader = get_loader(images_dir=Path(config.data_config.images_dir),
+                            annotations_path=config.data_config.annotations_path,
                             ids=val_ids)
 
     # Instantiate model
@@ -64,5 +66,4 @@ if __name__ == '__main__':
     
     Cristian Castro
     """
-
     run()

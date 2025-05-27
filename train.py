@@ -65,21 +65,21 @@ def evaluate(model: CustomMaskRCNN, val_loader: DataLoader, coco_gt: COCO, epoch
 def train_model(model: CustomMaskRCNN, train_loader: DataLoader, val_loader: DataLoader, coco: COCO, config: OmegaConf
                 ) -> Tuple[CustomMaskRCNN, List, List]:
     params =  [p for p in model.parameters() if p.requires_grad]
-    optimizer = SGD(params, lr=config.learning_rate,
-                    momentum=config.momentum,
-                    weight_decay=config.weight_decay)
+    optimizer = SGD(params, lr=config.train_config.learning_rate,
+                    momentum=config.train_config.momentum,
+                    weight_decay=config.train_config.weight_decay)
 
-    if config.scheduler.lr_scheduler:
+    if config.train_config.scheduler.lr_scheduler:
         lr_schedule = lr_scheduler.StepLR(
             optimizer=optimizer,
-            step_size=config.scheduler.step_size,
-            gamma=config.scheduler.gamma
+            step_size=config.train_config.scheduler.step_size,
+            gamma=config.train_config.scheduler.gamma
         )
 
     loss_history = []
     map_history = []
 
-    for epoch in range(config.epochs):
+    for epoch in range(config.train_config.epochs):
         model.train()
         epoch_loss = 0.
 
