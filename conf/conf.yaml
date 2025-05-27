@@ -4,5 +4,5 @@ defaults:
   - model_config: model_config
 
 mlflow:
-  experiment_name: 'test'
+  experiment_name: 'overfitting_test'
   uri: 'http://127.0.0.1:5000/'

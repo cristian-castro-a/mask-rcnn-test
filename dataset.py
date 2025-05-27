@@ -4,6 +4,7 @@ from typing import Callable, Optional, List
 import albumentations as A
 import numpy as np
 import torch
+from omegaconf import OmegaConf
 from PIL import Image
 from albumentations.pytorch import ToTensorV2
 from pycocotools.coco import COCO
@@ -127,7 +128,8 @@ def collate_fn(batch):
     return tuple(zip(*batch))
 
 
-def get_loader(images_dir: Path, annotations_path: Path, ids: List, train: bool = True) -> DataLoader:
+def get_loader(images_dir: Path, annotations_path: Path, ids: List, config: OmegaConf, train: bool = True) \
+        -> DataLoader:
     if train:
         dataset = ForksSpoonsKnifesDataset(images_dir=images_dir,
                                            annotations_path=annotations_path,
@@ -143,7 +145,7 @@ def get_loader(images_dir: Path, annotations_path: Path, ids: List, train: bool 
                                            image_ids=ids)
 
     loader = DataLoader(dataset,
-                        batch_size=3,
+                        batch_size=config.train_config.batch_size,
                         shuffle=True,
                         collate_fn=collate_fn)
 
