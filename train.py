@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Tuple, List
 
 import torch
+import mlflow
 from omegaconf import OmegaConf
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
@@ -12,11 +13,13 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from model import CustomMaskRCNN
+from utils.utils import get_params
 
 DEVICE = torch.device('cpu') # torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 TMP = Path('tmp')
 
 logger = logging.getLogger(__name__)
+
 
 def evaluate(model: CustomMaskRCNN, val_loader: DataLoader, coco_gt: COCO, epoch: int) -> float:
     TMP.mkdir(parents=True, exist_ok=True)
@@ -64,6 +67,10 @@ def evaluate(model: CustomMaskRCNN, val_loader: DataLoader, coco_gt: COCO, epoch
 
 def train_model(model: CustomMaskRCNN, train_loader: DataLoader, val_loader: DataLoader, coco: COCO, config: OmegaConf
                 ) -> Tuple[CustomMaskRCNN, List, List]:
+
+    mlflow.set_experiment(experiment_name=config.mlflow.experiment_name)
+    mlflow.set_tracking_uri(uri=config.mlflow.uri)
+
     params =  [p for p in model.parameters() if p.requires_grad]
     optimizer = SGD(params, lr=config.train_config.learning_rate,
                     momentum=config.train_config.momentum,
@@ -76,36 +83,47 @@ def train_model(model: CustomMaskRCNN, train_loader: DataLoader, val_loader: Dat
             gamma=config.train_config.scheduler.gamma
         )
 
+    # Dictionary to log into mlflow
+    experiment_params = get_params(config=config)
+
     loss_history = []
     map_history = []
 
-    for epoch in range(config.train_config.epochs):
-        model.train()
-        epoch_loss = 0.
+    with mlflow.start_run():
+        mlflow.log_params(params=experiment_params)
 
-        for images, targets in tqdm(train_loader, desc=f'Epoch: {epoch+1}'):
-            images = [img.to(DEVICE) for img in images]
-            targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
+        for epoch in range(config.train_config.epochs):
+            model.train()
+            epoch_loss = 0.
 
-            loss_dict = model(images, targets)
-            total_loss = sum(loss for loss in loss_dict.values())
+            for images, targets in tqdm(train_loader, desc=f'Epoch: {epoch+1}'):
+                images = [img.to(DEVICE) for img in images]
+                targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
 
-            optimizer.zero_grad()
-            total_loss.backward()
-            optimizer.step()
+                loss_dict = model(images, targets)
+                total_loss = sum(loss for loss in loss_dict.values())
 
-            epoch_loss += total_loss.item()
+                optimizer.zero_grad()
+                total_loss.backward()
+                optimizer.step()
 
-        # lr_schedule.step()
+                epoch_loss += total_loss.item()
 
-        average_loss = epoch_loss / len(train_loader)
-        loss_history.append(average_loss)
+            if config.train_config.scheduler.lr_scheduler:
+                lr_schedule.step()
 
-        # Evaluate on validation set
-        map_50_95 = evaluate(model, val_loader, coco, epoch+1)
-        map_history.append(map_50_95)
+            average_loss = epoch_loss / len(train_loader)
+            loss_history.append(average_loss)
 
-        logger.info(f"[Epoch {epoch + 1}] Avg. Loss: {average_loss:.4f}")
-        logger.info(f"[Epoch {epoch + 1}] mAP @ 0.50:0.95 = {map_50_95:.4f}")
+            # Evaluate on validation set
+            map_50_95 = evaluate(model, val_loader, coco, epoch+1)
+            map_history.append(map_50_95)
+
+            logger.info(f"[Epoch {epoch + 1}] Avg. Loss: {average_loss:.4f}")
+            logger.info(f"[Epoch {epoch + 1}] mAP @ 0.50:0.95 = {map_50_95:.4f}")
+
+            # Log metrics per epoch into mlflow
+            mlflow.log_metric('loss', average_loss, step=epoch)
+            mlflow.log_metric('map_50_95', map_50_95, step=epoch)
 
     return model, loss_history, map_history

@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import plotly.graph_objects as go
 import torch
+from omegaconf import OmegaConf
 import torchvision.transforms.functional as F
 from plotly.subplots import make_subplots
 from torch.utils.data import DataLoader
@@ -20,9 +21,6 @@ CLASS_COLORS = {
     2: (0, 255, 0),    # Green for spoon
     3: (0, 0, 255),    # Blue for knife
 }
-
-DETECTION_THRESHOLD = 0.5
-SCORE_THRESHOLD = 0.23
 
 
 def get_config(config: Path) -> Dict:
@@ -63,7 +61,7 @@ def overlay_mask_on_image(image: torch.Tensor, mask: torch.Tensor, alpha: float 
     return blended
 
 
-def inference_and_visualization(model: CustomMaskRCNN, val_loader: DataLoader) -> None:
+def inference_and_visualization(model: CustomMaskRCNN, val_loader: DataLoader, config: OmegaConf) -> None:
     model.eval()
     with torch.no_grad():
         for idx, (images, targets) in enumerate(val_loader):
@@ -84,8 +82,8 @@ def inference_and_visualization(model: CustomMaskRCNN, val_loader: DataLoader) -
                 plt.savefig(f'tmp/original_{idx}_{i}.png', bbox_inches='tight')
                 plt.close()
 
-                keep = output['scores'].cpu() > SCORE_THRESHOLD
-                masks = (output['masks'] > DETECTION_THRESHOLD).squeeze(1).cpu()[keep]
+                keep = output['scores'].cpu() > config.train_config.score_threshold
+                masks = (output['masks'] > config.train_config.detection_threshold).squeeze(1).cpu()[keep]
                 labels = output['labels'].cpu()[keep]
 
                 if masks.numel() == 0:
@@ -110,3 +108,15 @@ def inference_and_visualization(model: CustomMaskRCNN, val_loader: DataLoader) -
                 plt.axis('off')
                 plt.savefig(f'tmp/overlay_{idx}_{i}.png', bbox_inches='tight')
                 plt.close()
+
+
+def get_params(config: OmegaConf)-> Dict:
+    """
+    Transforms config from Hydra into a dictionary for mlflow
+    """
+    combined_config = {
+        **{k: v for k, v in config.train_config.items() if k != 'scheduler'},
+        **config.train_config.scheduler,
+        **config.model_config
+    }
+    return combined_config

@@ -2,7 +2,6 @@ import logging
 from pathlib import Path
 
 import hydra
-import mlflow
 import torch
 from omegaconf import OmegaConf
 from pycocotools.coco import COCO
@@ -19,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 @hydra.main(config_path='conf', config_name='conf.yaml', version_base=None)
 def run(config: OmegaConf) -> None:
-    coco = COCO(annotation_file=config.annotations_path)
+    coco = COCO(annotation_file=config.data_config.annotations_path)
     all_image_ids = list(coco.imgs.keys())
 
     # Train and validation ids
