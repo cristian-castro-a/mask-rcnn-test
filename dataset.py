@@ -4,9 +4,9 @@ from typing import Callable, Optional, List
 import albumentations as A
 import numpy as np
 import torch
-from omegaconf import OmegaConf
 from PIL import Image
 from albumentations.pytorch import ToTensorV2
+from omegaconf import OmegaConf
 from pycocotools.coco import COCO
 from torch.utils.data import Dataset, DataLoader
 

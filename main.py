@@ -27,9 +27,11 @@ def run(config: OmegaConf) -> None:
 
     train_loader = get_loader(images_dir=Path(config.data_config.images_dir),
                               annotations_path=config.data_config.annotations_path,
+                              config=config,
                               ids=train_ids)
     val_loader = get_loader(images_dir=Path(config.data_config.images_dir),
                             annotations_path=config.data_config.annotations_path,
+                            config=config,
                             ids=val_ids)
 
     # Instantiate model
@@ -45,8 +47,8 @@ def run(config: OmegaConf) -> None:
                                                    config=config)
 
     # Save model
-    logger.info("Saving model to tmp/model_weights.pth")
-    torch.save(model.state_dict(), 'tmp/model_weights.pth')
+    logger.info(f"Saving model to tmp/{config.mlflow.experiment_name}.pth")
+    torch.save(model.state_dict(), f'tmp/{config.mlflow.experiment_name}.pth')
 
     # Plot loss and mAP
     plot_training_curves(loss_history=loss_history, mAP_history=mAP_history)

@@ -3,8 +3,8 @@ import logging
 from pathlib import Path
 from typing import Tuple, List
 
-import torch
 import mlflow
+import torch
 from omegaconf import OmegaConf
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
