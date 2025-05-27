@@ -39,14 +39,18 @@ def visualize_from_dataset(dataset: ForksSpoonsKnifesDataset) -> None:
 
 
 def visualize_from_dataloader(data_loader: DataLoader) -> None:
-    for images, targets in iter(data_loader):
+    mean = np.array([0.485, 0.456, 0.406])
+    std = np.array([0.229, 0.224, 0.225])
 
+    for images, targets in iter(data_loader):
         for idx in range(2):
             image = images[idx]
             target = targets[idx]
 
             image_np = image.permute(1, 2, 0).numpy() # Channels at the end
-            image_np = (image_np * 255).astype('uint8')
+
+            image_np = (image_np * std + mean) * 255
+            image_np = np.clip(image_np, 0, 255).astype('uint8')
 
             plt.figure(figsize=(10, 10))
             plt.imshow(image_np)
