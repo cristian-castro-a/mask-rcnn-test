@@ -1,4 +1,5 @@
 import torch.nn as nn
+from omegaconf import OmegaConf
 from torchvision.models import ResNet50_Weights
 from torchvision.models.detection import MaskRCNN
 from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
@@ -8,21 +9,23 @@ from torchvision.models.detection.rpn import AnchorGenerator
 
 
 class CustomMaskRCNN(nn.Module):
-    def __init__(self, num_classes: int, pretrained_backbone: bool = True):
+    def __init__(self, num_classes: int, config: OmegaConf, pretrained_backbone: bool = True):
         super().__init__()
 
         weights = ResNet50_Weights.IMAGENET1K_V1 if pretrained_backbone else None
-        backbone = resnet_fpn_backbone(backbone_name='resnet50', weights=weights, trainable_layers=3)
-
+        backbone = resnet_fpn_backbone(backbone_name='resnet50',
+                                       weights=weights,
+                                       trainable_layers=config.trainable_layers
+                                       )
         # # Transfer learning
         # for param in backbone.parameters():
         #     param.requires_grad = False
 
         # FPN has 5 feature maps
         anchor_generator = AnchorGenerator(
-            sizes=((16,), (32,), (64,), (128,), (256,)),
-            aspect_ratios=(
-                (0.12, 0.5, 2.0, 8.0),)*5)
+            sizes=tuple((i,) for i in config.anchor_sizes),
+            aspect_ratios=(tuple(i for i in config.anchor_aspect_ratios),)*5
+        )
 
         # Instantiate Mask R-CNN
         self.model = MaskRCNN(
@@ -37,7 +40,7 @@ class CustomMaskRCNN(nn.Module):
 
         # Custom mask prediction
         in_features_mask = self.model.roi_heads.mask_predictor.conv5_mask.in_channels
-        hidden_layer = 256
+        hidden_layer = config.hidden_layers_mask
         self.model.roi_heads.mask_predictor = MaskRCNNPredictor(
             in_features_mask, hidden_layer, num_classes
         )

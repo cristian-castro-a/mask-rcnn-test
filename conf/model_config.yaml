@@ -1,4 +1,4 @@
-trainable_layers: 3
+trainable_layers: 2
 
 anchor_sizes:
   - 16
@@ -12,3 +12,5 @@ anchor_aspect_ratios:
   - 0.5
   - 2.0
   - 8.0
+
+hidden_layers_mask: 256

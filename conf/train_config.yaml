@@ -1,5 +1,14 @@
-epochs: 15
+epochs: 1
 
 detection_threshold: 0.5
 
 score_threshold: 0.25
+
+learning_rate: 0.005
+momentum: 0.8
+weight_decay: 0.0001
+
+scheduler:
+  lr_scheduler: False
+  step_size: 3
+  gamma: 0.5

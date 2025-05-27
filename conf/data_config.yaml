@@ -1,6 +1,6 @@
 images_dir: 'data/images'
 
-annotations_path: 'data/annotations/instances_default.json'
+annotations_path: 'data/annotations/instances.json'
 
 class_names:
   '1': 'fork'

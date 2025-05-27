@@ -4,16 +4,16 @@ from pathlib import Path
 from typing import Tuple, List
 
 import torch
+from omegaconf import OmegaConf
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
-from torch.optim import SGD
+from torch.optim import SGD, lr_scheduler
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from model import CustomMaskRCNN
 
 DEVICE = torch.device('cpu') # torch.device("mps" if torch.backends.mps.is_available() else "cpu")
-EPOCHS = 15
 TMP = Path('tmp')
 
 logger = logging.getLogger(__name__)
@@ -62,21 +62,24 @@ def evaluate(model: CustomMaskRCNN, val_loader: DataLoader, coco_gt: COCO, epoch
 
 
 
-def train_model(model: CustomMaskRCNN, train_loader: DataLoader, val_loader: DataLoader, coco: COCO) \
-        -> Tuple[CustomMaskRCNN, List, List]:
+def train_model(model: CustomMaskRCNN, train_loader: DataLoader, val_loader: DataLoader, coco: COCO, config: OmegaConf
+                ) -> Tuple[CustomMaskRCNN, List, List]:
     params =  [p for p in model.parameters() if p.requires_grad]
-    optimizer = SGD(params, lr=0.005, momentum=0.8, weight_decay=0.0001)
+    optimizer = SGD(params, lr=config.learning_rate,
+                    momentum=config.momentum,
+                    weight_decay=config.weight_decay)
 
-    # lr_schedule = lr_scheduler.StepLR(
-    #     optimizer=optimizer,
-    #     step_size=3,
-    #     gamma=0.5
-    # )
+    if config.scheduler.lr_scheduler:
+        lr_schedule = lr_scheduler.StepLR(
+            optimizer=optimizer,
+            step_size=config.scheduler.step_size,
+            gamma=config.scheduler.gamma
+        )
 
     loss_history = []
     map_history = []
 
-    for epoch in range(EPOCHS):
+    for epoch in range(config.epochs):
         model.train()
         epoch_loss = 0.
 
