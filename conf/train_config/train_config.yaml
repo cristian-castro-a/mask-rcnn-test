@@ -5,7 +5,7 @@ detection_threshold: 0.5
 
 score_threshold: 0.25
 
-learning_rate: 0.005
+learning_rate: 0.0001
 momentum: 0.8
 weight_decay: 0.0001
 

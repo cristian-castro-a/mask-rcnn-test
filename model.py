@@ -19,7 +19,7 @@ class CustomMaskRCNN(nn.Module):
                                        )
         # # Transfer learning
         # for param in backbone.parameters():
-        #     param.requires_grad = False
+        #     param.requires_grad = True
 
         # FPN has 5 feature maps
         anchor_generator = AnchorGenerator(

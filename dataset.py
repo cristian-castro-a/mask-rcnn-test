@@ -87,12 +87,12 @@ class ForksSpoonsKnifesDataset(Dataset):
                                           bboxes=boxes,
                                           class_labels=labels)
             image = transformed['image']
-            masks = torch.stack([torch.as_tensor(m, dtype=torch.uint8) for m in transformed['masks']])
+            masks = torch.stack([torch.as_tensor((m > 0.5), dtype=torch.float32) for m in transformed['masks']])
             boxes = torch.as_tensor(transformed['bboxes'], dtype=torch.float32)
             labels = torch.as_tensor(transformed['class_labels'], dtype=torch.int64)
         else:
             image = torch.from_numpy(image).permute(2, 0, 1) / 255.
-            masks = torch.as_tensor(masks, dtype=torch.uint8)
+            masks = torch.as_tensor(masks, dtype=torch.float32)
             boxes = torch.as_tensor(boxes, dtype=torch.float32)
             labels = torch.as_tensor(labels, dtype=torch.int64)
 
