@@ -44,7 +44,7 @@ def plot_training_curves(loss_history: List, mAP_history: List) -> None:
     fig.update_yaxes(title_text='Loss', secondary_y=False)
     fig.update_yaxes(title_text='mAP', secondary_y=True)
 
-    output_path = '../tmp/training_metrics.html'
+    output_path = './tmp/training_metrics.html'
     fig.write_html(output_path)
 
 
@@ -74,10 +74,11 @@ def inference_and_visualization(model: CustomMaskRCNN, val_loader: DataLoader, c
                 unnormalized = image.clone()
                 mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
                 std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
-                unnormalized = unnormalized * std + mean
+
+                denormalized = unnormalized * std + mean
 
                 plt.figure(figsize=(10, 10))
-                plt.imshow(F.to_pil_image(unnormalized.cpu()))
+                plt.imshow(F.to_pil_image(denormalized.cpu()))
                 plt.axis('off')
                 plt.savefig(f'tmp/original_{idx}_{i}.png', bbox_inches='tight')
                 plt.close()
