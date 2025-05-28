@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from omegaconf import OmegaConf
 from torch.utils.data import DataLoader
+from matplotlib.patches import Rectangle
 
 IMAGES_DIR = '../data/images'
 ANNOTATIONS_PATH = '../data/annotations/instances.json'
@@ -12,6 +13,9 @@ CLASS_COLORS = {
     2: (0, 255, 0),    # Green for spoon
     3: (0, 0, 255),    # Blue for knife
 }
+CLASS_NAMES = {1: 'fork', 2: 'spoon', 3: 'knife'}
+MEAN = np.array([0.485, 0.456, 0.406])
+STD = np.array([0.229, 0.224, 0.225])
 
 
 def visualize_from_dataset(dataset: ForksSpoonsKnifesDataset) -> None:
@@ -39,22 +43,16 @@ def visualize_from_dataset(dataset: ForksSpoonsKnifesDataset) -> None:
 
 
 def visualize_from_dataloader(data_loader: DataLoader) -> None:
-    mean = np.array([0.485, 0.456, 0.406])
-    std = np.array([0.229, 0.224, 0.225])
-
     for images, targets in iter(data_loader):
         for idx in range(2):
             image = images[idx]
             target = targets[idx]
 
             image_np = image.permute(1, 2, 0).numpy() # Channels at the end
-
-            image_np = (image_np * std + mean) * 255
+            image_np = (image_np * 255).astype('uint8')
             image_np = np.clip(image_np, 0, 255).astype('uint8')
 
             plt.figure(figsize=(10, 10))
-            plt.imshow(image_np)
-            plt.axis('off')
 
             for i in range(target['masks'].shape[0]):
                 mask = target['masks'][i].numpy()
@@ -65,7 +63,18 @@ def visualize_from_dataloader(data_loader: DataLoader) -> None:
                 color_np = np.array(color, dtype=np.uint8)
                 image_np[masked] = (image_np[masked] * 0.5 + color_np * 0.5).astype(np.uint8)
 
-            plt.imshow(image_np.astype('uint8'))
+            plt.imshow(image_np)
+
+            for i in range(target['boxes'].shape[0]):
+                x_min, y_min, x_max, y_max = target['boxes'][i].tolist()
+                x_avg = (x_max + x_min) / 2
+                y_avg = (y_max + y_min) / 2
+                text_img = (f'h/w: {(y_max-y_min)/(x_max-x_min):.2f}, label: {CLASS_NAMES[target["labels"][i].item()]}')
+
+                plt.gca().add_patch(Rectangle((x_min, y_min), x_max - x_min, y_max - y_min, edgecolor='black',
+                                              facecolor='none', lw=4))
+                plt.text(x_avg, y_avg, text_img, size=25)
+
             plt.show()
 
 
@@ -79,7 +88,7 @@ def run() -> None:
                              config=config,
                              train=True)
 
-    visualize_from_dataset(dataset=dataset)
+    #visualize_from_dataset(dataset=dataset)
     visualize_from_dataloader(data_loader=data_loader)
 
 
