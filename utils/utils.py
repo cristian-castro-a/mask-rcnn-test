@@ -83,7 +83,7 @@ def inference_and_visualization(model: CustomMaskRCNN, val_loader: DataLoader, c
                 plt.savefig(f'tmp/original_{idx}_{i}.png', bbox_inches='tight')
                 plt.close()
 
-                keep = output['scores'].detach().cpu() == max(output['scores'].detach().cpu()) # output['scores'].detach().cpu() > config.train_config.score_threshold
+                keep = output['scores'].detach().cpu() > config.train_config.score_threshold
                 masks = (output['masks'] > config.train_config.detection_threshold).detach().squeeze(1).cpu()[keep]
                 labels = output['labels'].cpu()[keep]
                 bboxes = output['boxes'][keep]

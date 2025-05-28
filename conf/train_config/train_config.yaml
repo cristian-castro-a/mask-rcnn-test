@@ -3,7 +3,7 @@ batch_size: 2
 
 detection_threshold: 0.5
 
-score_threshold: 0.25
+score_threshold: 0.8
 
 learning_rate: 0.01
 momentum: 0.9

@@ -1,78 +1,46 @@
-import json
 import logging
-from pathlib import Path
+from typing import Dict
 from typing import Tuple, List
 
 import mlflow
-import numpy as np
 import torch
 from omegaconf import OmegaConf
-from pycocotools import mask
 from pycocotools.coco import COCO
-from pycocotools.cocoeval import COCOeval
 from torch.optim import SGD, lr_scheduler
 from torch.utils.data import DataLoader
+from torchmetrics.detection import MeanAveragePrecision
 from tqdm import tqdm
 
 from model import CustomMaskRCNN
 from utils.utils import get_params
 
 DEVICE = torch.device('cpu') # torch.device("mps" if torch.backends.mps.is_available() else "cpu")
-TMP = Path('tmp')
 
 logger = logging.getLogger(__name__)
 
 
-def evaluate_map(model: CustomMaskRCNN, val_loader: DataLoader, coco_gt: COCO, epoch: int) -> float:
-    TMP.mkdir(parents=True, exist_ok=True)
-
+def evaluate_map(model: CustomMaskRCNN, val_loader: DataLoader, epoch: int) -> Dict:
     model.eval()
-    coco_results = []
+    map_metric = 0.
 
     with torch.no_grad():
         for images, targets in tqdm(val_loader, desc='Evaluating'):
             images = [img.to(DEVICE) for img in images]
-            outputs = model(images)
 
-            for output, target in zip(outputs, targets):
-                image_id = int(target['image_id'].item())
-                boxes =  output['boxes'].cpu()
-                scores = output['scores'].cpu()
-                labels = output['labels'].cpu()
-                masks = output['masks'].cpu()
+            preds = model(images)
+            for pred in preds:
+                pred['masks'] = (pred['masks'] > 0.5).to(torch.uint8)
 
-                for box, score, label, masks in zip(boxes, scores, labels, masks):
-                    x_min, y_min, x_max, y_max = box.tolist()
+            targets = [{k: v for k, v in target.items() if k in ['boxes', 'masks', 'labels']} for target in targets]
+            for target in targets:
+                target['masks'] = (target['masks'] > 0.5).to(torch.uint8)
 
-                    binary_mask = (masks[0] > 0.5).numpy().astype(np.uint8)
+            metric = MeanAveragePrecision(iou_type='bbox')
+            metric.update(preds, targets)
+            map_dict = metric.compute()
+            map_metric += map_dict['map']
 
-                    rle = mask.encode(np.asfortranarray(binary_mask))
-                    rle['counts'] = rle['counts'].decode('utf-8')
-
-                    coco_results.append({
-                        'image_id': image_id,
-                        'category_id': int(label),
-                        'bbox': [x_min, y_min, x_max-x_min, y_max-y_min],
-                        'score': float(score),
-                        'segmentation': rle,
-                    })
-        if not coco_results:
-            return 0.
-
-        # Save results to file for COCOeval
-        results_path = str(TMP / f'results_epoch_{epoch}.json')
-
-        with open(results_path, 'w', encoding='utf-8') as f:
-            json.dump(coco_results, f, indent=2)
-
-        coco_dt = coco_gt.loadRes(results_path)
-        coco_eval = COCOeval(coco_gt, coco_dt, iouType='segm')
-        coco_eval.evaluate()
-        coco_eval.accumulate()
-        coco_eval.summarize()
-
-        return coco_eval.stats[0]
-
+    return map_metric/len(val_loader)
 
 
 def train_model(model: CustomMaskRCNN, train_loader: DataLoader, val_loader: DataLoader, coco: COCO, config: OmegaConf
@@ -132,7 +100,7 @@ def train_model(model: CustomMaskRCNN, train_loader: DataLoader, val_loader: Dat
             loss_history.append(average_loss)
 
             # Evaluate on validation set
-            map_50_95 = evaluate_map(model, val_loader, coco, epoch+1)
+            map_50_95 = evaluate_map(model, val_loader, epoch+1)
             map_history.append(map_50_95)
 
             logger.info(f"[Epoch {epoch + 1}] Avg. Loss: {average_loss:.4f}")
