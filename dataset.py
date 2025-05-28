@@ -86,7 +86,7 @@ class ForksSpoonsKnifesDataset(Dataset):
                                           masks=list(masks),
                                           bboxes=boxes,
                                           class_labels=labels)
-            image = transformed['image'] / 255.
+            image = transformed['image'].float() / 255.0
             masks = torch.stack([torch.as_tensor((m > 0.5), dtype=torch.float32) for m in transformed['masks']])
             boxes = torch.as_tensor(transformed['bboxes'], dtype=torch.float32)
             labels = torch.as_tensor(transformed['class_labels'], dtype=torch.int64)
@@ -115,7 +115,6 @@ class ForksSpoonsKnifesDataset(Dataset):
 def get_train_transforms():
     return A.Compose([
         A.Resize(512, 512),
-        #A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
         ToTensorV2()
     ], bbox_params=A.BboxParams(format='pascal_voc', label_fields=['class_labels']))
 
@@ -136,7 +135,6 @@ def get_loader(images_dir: Path, annotations_path: Path, ids: List, config: Omeg
                                            annotations_path=annotations_path,
                                            transforms=A.Compose([
                                                A.Resize(512, 512),
-                                               #A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
                                                ToTensorV2()]),
                                            image_ids=ids)
 
