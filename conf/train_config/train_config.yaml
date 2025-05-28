@@ -1,4 +1,4 @@
-epochs: 10
+epochs: 50
 batch_size: 2
 
 detection_threshold: 0.5

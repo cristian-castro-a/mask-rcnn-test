@@ -2,13 +2,14 @@ import json
 import logging
 from pathlib import Path
 from typing import Tuple, List
-import numpy as np
+
 import mlflow
+import numpy as np
 import torch
 from omegaconf import OmegaConf
+from pycocotools import mask
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
-from pycocotools import mask
 from torch.optim import SGD, lr_scheduler
 from torch.utils.data import DataLoader
 from tqdm import tqdm

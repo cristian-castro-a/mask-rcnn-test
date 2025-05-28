@@ -72,13 +72,13 @@ def inference_and_visualization(model: CustomMaskRCNN, val_loader: DataLoader, c
                 image = images[i].detach().cpu()
 
                 unnormalized = image.clone()
-                mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
-                std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
-
-                denormalized = unnormalized * std + mean
+                # mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
+                # std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
+                #
+                # denormalized = unnormalized * std + mean
 
                 plt.figure(figsize=(10, 10))
-                plt.imshow(F.to_pil_image(denormalized.cpu()))
+                plt.imshow(F.to_pil_image(unnormalized.cpu()))
                 plt.axis('off')
                 plt.savefig(f'tmp/original_{idx}_{i}.png', bbox_inches='tight')
                 plt.close()
@@ -99,7 +99,7 @@ def inference_and_visualization(model: CustomMaskRCNN, val_loader: DataLoader, c
 
                 colors = [CLASS_COLORS[label.item()] for label in labels]
                 image_with_masks = draw_segmentation_masks(
-                    F.convert_image_dtype(denormalized, dtype=torch.uint8),
+                    F.convert_image_dtype(unnormalized, dtype=torch.uint8),
                     masks=masks,
                     alpha=0.5,
                     colors=colors
