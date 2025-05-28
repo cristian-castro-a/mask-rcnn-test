@@ -15,17 +15,15 @@ class CustomMaskRCNN(nn.Module):
         weights = ResNet50_Weights.IMAGENET1K_V1 if pretrained_backbone else None
         backbone = resnet_fpn_backbone(backbone_name='resnet50',
                                        weights=weights,
-                                       trainable_layers=config.model_config.trainable_layers
-                                       )
+                                       trainable_layers=config.model_config.trainable_layers)
         # # Transfer learning
         # for param in backbone.parameters():
         #     param.requires_grad = True
 
         # FPN has 5 feature maps
         anchor_generator = AnchorGenerator(
-            sizes=tuple((i,) for i in config.model_config.anchor_sizes),
-            aspect_ratios=(tuple(i for i in config.model_config.anchor_aspect_ratios),)*5
-        )
+            sizes=(tuple(i for i in config.model_config.anchor_sizes),), #tuple((i,) for i in config.model_config.anchor_sizes),
+            aspect_ratios= (tuple(i for i in config.model_config.anchor_aspect_ratios),)) #(tuple(i for i in config.model_config.anchor_aspect_ratios),)*5)
 
         # Instantiate Mask R-CNN
         self.model = MaskRCNN(

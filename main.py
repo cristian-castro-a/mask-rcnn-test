@@ -36,25 +36,25 @@ def run(config: OmegaConf) -> None:
 
     # Instantiate model
     model = CustomMaskRCNN(num_classes=4, config=config)
-    #model.to(DEVICE)
+    model.to(DEVICE)
 
-    ## Get the trained model
-    #logger.info('Starting Training...')
-    #model, loss_history, mAP_history = train_model(model=model,
-    #                                               train_loader=train_loader,
-    #                                               val_loader=val_loader,
-    #                                               coco=coco,
-    #                                               config=config)
+    # Get the trained model
+    logger.info('Starting Training...')
+    model, loss_history, mAP_history = train_model(model=model,
+                                                  train_loader=train_loader,
+                                                  val_loader=val_loader,
+                                                  coco=coco,
+                                                  config=config)
 
-    ## Save model
-    #logger.info(f"Saving model to tmp/{config.mlflow.experiment_name}.pth")
-    #torch.save(model.state_dict(), f'tmp/{config.mlflow.experiment_name}.pth')
+    # Save model
+    logger.info(f"Saving model to tmp/{config.mlflow.experiment_name}.pth")
+    torch.save(model.state_dict(), f'tmp/{config.mlflow.experiment_name}.pth')
 
-    ## Plot loss and mAP
-    #plot_training_curves(loss_history=loss_history, mAP_history=mAP_history)
+    # Plot loss and mAP
+    plot_training_curves(loss_history=loss_history, mAP_history=mAP_history)
 
-    # Load model
-    model.load_state_dict(torch.load(f'tmp/{config.mlflow.experiment_name}.pth', map_location=DEVICE))
+    # # Load model
+    # model.load_state_dict(torch.load(f'tmp/{config.mlflow.experiment_name}.pth', map_location=DEVICE))
 
     # Inference and visualization
     inference_and_visualization(model=model, val_loader=val_loader, config=config)
@@ -67,5 +67,5 @@ if __name__ == '__main__':
     
     Cristian Castro
     """
-
+    Path('tmp').mkdir(parents=True, exist_ok=True)
     run()

@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pycocotools.coco import COCO
 
-ANNOTATIONS_PATH = '../data/annotations/instances_default.json'
+ANNOTATIONS_PATH = '../data/annotations/instances.json'
 
 
 def run() -> None:
@@ -45,7 +45,7 @@ def run() -> None:
     plt.xlabel('Aspect Ratio (width/height)')
     plt.ylabel('Frequency')
     plt.title('Aspect Ratio Distribution')
-    plt.savefig('tmp/histogram.png', bbox_inches='tight')
+    plt.savefig('../tmp/histogram.png', bbox_inches='tight')
 
 
 if __name__ == '__main__':

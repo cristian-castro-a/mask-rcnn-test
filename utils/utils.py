@@ -69,7 +69,7 @@ def inference_and_visualization(model: CustomMaskRCNN, val_loader: DataLoader, c
             outputs = model(images)
 
             for i, output in enumerate(outputs):
-                image = images[i].cpu()
+                image = images[i].detach().cpu()
 
                 unnormalized = image.clone()
                 mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
@@ -83,23 +83,24 @@ def inference_and_visualization(model: CustomMaskRCNN, val_loader: DataLoader, c
                 plt.savefig(f'tmp/original_{idx}_{i}.png', bbox_inches='tight')
                 plt.close()
 
-                keep = output['scores'].cpu() > config.train_config.score_threshold
-                masks = (output['masks'] > config.train_config.detection_threshold).squeeze(1).cpu()[keep]
+                keep = output['scores'].detach().cpu() == max(output['scores'].detach().cpu()) # output['scores'].detach().cpu() > config.train_config.score_threshold
+                masks = (output['masks'] > config.train_config.detection_threshold).detach().squeeze(1).cpu()[keep]
                 labels = output['labels'].cpu()[keep]
+                bboxes = output['boxes'][keep]
 
                 if masks.numel() == 0:
                     continue
 
-                color_masks = torch.zeros((len(masks), *masks.shape[1:]), dtype=torch.bool)
-                for j, label in enumerate(labels):
-                    if label.item() == 0:  # Background
-                        continue
-                    color_masks[j] = masks[j]
+                # color_masks = torch.zeros((len(masks), *masks.shape[1:]), dtype=torch.bool)
+                # for j, label in enumerate(labels):
+                #     if label.item() == 0:  # Background
+                #         continue
+                #     color_masks[j] = masks[j]
 
                 colors = [CLASS_COLORS[label.item()] for label in labels]
                 image_with_masks = draw_segmentation_masks(
-                    (image * 255).to(torch.uint8),
-                    masks = color_masks,
+                    F.convert_image_dtype(denormalized, dtype=torch.uint8),
+                    masks=masks,
                     alpha=0.5,
                     colors=colors
                 )
@@ -107,7 +108,15 @@ def inference_and_visualization(model: CustomMaskRCNN, val_loader: DataLoader, c
                 plt.figure(figsize=(10, 10))
                 plt.imshow(F.to_pil_image(image_with_masks))
                 plt.axis('off')
-                plt.savefig(f'tmp/overlay_{idx}_{i}.png', bbox_inches='tight')
+
+                for index, label in enumerate(labels):
+                    x_min, y_min, x_max, y_max = bboxes[index].tolist()
+                    x_avg = (x_max + x_min) / 2
+                    y_avg = (y_max + y_min) / 2
+                    label = CLASS_NAMES[label.item()]
+                    plt.text(x_avg, y_avg, label, size=25)
+
+                plt.savefig(f'tmp/epochs_{config.train_config.epochs}_overlay_{idx}_{i}.png', bbox_inches='tight')
                 plt.close()
 
 

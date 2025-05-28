@@ -104,6 +104,9 @@ def train_model(model: CustomMaskRCNN, train_loader: DataLoader, val_loader: Dat
         for epoch in range(config.train_config.epochs):
             model.train()
             epoch_loss = 0.
+            classifier_loss = 0.
+            box_reg_loss = 0.
+            mask_loss = 0.
 
             for images, targets in tqdm(train_loader, desc=f'Epoch: {epoch+1}'):
                 images = [img.to(DEVICE) for img in images]
@@ -117,6 +120,9 @@ def train_model(model: CustomMaskRCNN, train_loader: DataLoader, val_loader: Dat
                 optimizer.step()
 
                 epoch_loss += total_loss.item()
+                classifier_loss += loss_dict['loss_classifier'].item()
+                box_reg_loss += loss_dict['loss_box_reg'].item()
+                mask_loss += loss_dict['loss_mask'].item()
 
             if config.train_config.scheduler.lr_scheduler:
                 lr_schedule.step()
@@ -124,15 +130,18 @@ def train_model(model: CustomMaskRCNN, train_loader: DataLoader, val_loader: Dat
             average_loss = epoch_loss / len(train_loader)
             loss_history.append(average_loss)
 
-            # Evaluate on validation set
-            map_50_95 = evaluate_map(model, val_loader, coco, epoch+1)
-            map_history.append(map_50_95)
+            # # Evaluate on validation set
+            # map_50_95 = evaluate_map(model, val_loader, coco, epoch+1)
+            # map_history.append(map_50_95)
 
             logger.info(f"[Epoch {epoch + 1}] Avg. Loss: {average_loss:.4f}")
-            logger.info(f"[Epoch {epoch + 1}] mAP @ 0.50:0.95 = {map_50_95:.4f}")
+            # logger.info(f"[Epoch {epoch + 1}] mAP @ 0.50:0.95 = {map_50_95:.4f}")
 
             # Log metrics per epoch into mlflow
-            mlflow.log_metric('loss', average_loss, step=epoch)
-            mlflow.log_metric('map_50_95', map_50_95, step=epoch)
+            mlflow.log_metric('total_avg_loss', average_loss, step=epoch)
+            mlflow.log_metric('classifier_avg_loss', classifier_loss/len(train_loader), step=epoch)
+            mlflow.log_metric('box_reg_avg_loss', box_reg_loss/len(train_loader), step=epoch)
+            mlflow.log_metric('mask_avg_loss', mask_loss/len(train_loader), step=epoch)
+            # mlflow.log_metric('map_50_95', map_50_95, step=epoch)
 
     return model, loss_history, map_history
