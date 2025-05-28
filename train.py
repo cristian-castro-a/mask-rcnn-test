@@ -131,18 +131,18 @@ def train_model(model: CustomMaskRCNN, train_loader: DataLoader, val_loader: Dat
             average_loss = epoch_loss / len(train_loader)
             loss_history.append(average_loss)
 
-            # # Evaluate on validation set
-            # map_50_95 = evaluate_map(model, val_loader, coco, epoch+1)
-            # map_history.append(map_50_95)
+            # Evaluate on validation set
+            map_50_95 = evaluate_map(model, val_loader, coco, epoch+1)
+            map_history.append(map_50_95)
 
             logger.info(f"[Epoch {epoch + 1}] Avg. Loss: {average_loss:.4f}")
-            # logger.info(f"[Epoch {epoch + 1}] mAP @ 0.50:0.95 = {map_50_95:.4f}")
+            logger.info(f"[Epoch {epoch + 1}] mAP @ 0.50:0.95 = {map_50_95:.4f}")
 
             # Log metrics per epoch into mlflow
             mlflow.log_metric('total_avg_loss', average_loss, step=epoch)
             mlflow.log_metric('classifier_avg_loss', classifier_loss/len(train_loader), step=epoch)
             mlflow.log_metric('box_reg_avg_loss', box_reg_loss/len(train_loader), step=epoch)
             mlflow.log_metric('mask_avg_loss', mask_loss/len(train_loader), step=epoch)
-            # mlflow.log_metric('map_50_95', map_50_95, step=epoch)
+            mlflow.log_metric('map_50_95', map_50_95, step=epoch)
 
     return model, loss_history, map_history
