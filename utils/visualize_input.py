@@ -1,10 +1,12 @@
 from pathlib import Path
-from dataset import ForksSpoonsKnifesDataset, get_loader
+
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.patches import Rectangle
 from omegaconf import OmegaConf
 from torch.utils.data import DataLoader
-from matplotlib.patches import Rectangle
+
+from dataset import ForksSpoonsKnifesDataset, get_loader
 
 IMAGES_DIR = '../data/images'
 ANNOTATIONS_PATH = '../data/annotations/instances.json'
