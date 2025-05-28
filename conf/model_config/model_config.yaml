@@ -1,4 +1,4 @@
-trainable_layers: 1
+trainable_layers: 2
 
 anchor_sizes:
   - 32

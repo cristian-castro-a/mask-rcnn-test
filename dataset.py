@@ -140,7 +140,7 @@ def get_loader(images_dir: Path, annotations_path: Path, ids: List, config: Omeg
 
     loader = DataLoader(dataset,
                         batch_size=config.train_config.batch_size,
-                        shuffle=True,
+                        shuffle=False,
                         collate_fn=collate_fn)
 
     return loader

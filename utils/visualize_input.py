@@ -88,7 +88,7 @@ def run() -> None:
                              config=config,
                              train=True)
 
-    #visualize_from_dataset(dataset=dataset)
+    visualize_from_dataset(dataset=dataset)
     visualize_from_dataloader(data_loader=data_loader)
 
 
