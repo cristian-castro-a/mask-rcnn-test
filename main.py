@@ -22,8 +22,8 @@ def run(config: OmegaConf) -> None:
     all_image_ids = list(coco.imgs.keys())
 
     # Train and validation ids
-    train_ids = all_image_ids[:2]
-    val_ids = all_image_ids[:2]
+    train_ids = all_image_ids[:76]
+    val_ids = all_image_ids[76:]
 
     train_loader = get_loader(images_dir=Path(config.data_config.images_dir),
                               annotations_path=config.data_config.annotations_path,
