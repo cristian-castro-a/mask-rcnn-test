@@ -23,12 +23,6 @@ CLASS_COLORS = {
 }
 
 
-def get_config(config: Path) -> Dict:
-    with open(config, 'r') as file:
-        config_dict = yaml.safe_load(file)
-    return config_dict
-
-
 def plot_training_curves(loss_history: List, mAP_history: List) -> None:
     epochs = [i for i in range(1, len(loss_history)+1)]
 
@@ -46,19 +40,6 @@ def plot_training_curves(loss_history: List, mAP_history: List) -> None:
 
     output_path = './tmp/training_metrics.html'
     fig.write_html(output_path)
-
-
-def overlay_mask_on_image(image: torch.Tensor, mask: torch.Tensor, alpha: float = 0.5) -> np.ndarray:
-    image_np = image.permute(1, 2, 0).cpu().numpy()
-    image_np = (image_np * 255).astype(np.uint8)
-
-    mask_np = mask.cpu().numpy()
-    mask_rgb = np.zeros_like(image_np)
-    mask_rgb[:, :, 0] = mask_np * 255
-
-    blended = np.clip(image_np * (1-alpha) + mask_rgb * alpha, 0 , 255).astype(np.uint8)
-
-    return blended
 
 
 def inference_and_visualization(model: CustomMaskRCNN, val_loader: DataLoader, config: OmegaConf) -> None:
